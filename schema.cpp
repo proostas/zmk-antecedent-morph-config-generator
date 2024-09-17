@@ -106,7 +106,7 @@ bool Schema::load(const QString &filePath)
                         return false;
                     }
                     if (m_curAntecedent) {
-                        emit logEvent(QString("%1 is %2").arg(m_curAntecedent->symbol(), (m_curAntecedent->isValid(m_type) ? "valid" : "invalid")));
+                        emit logEvent(QString("%1 is %2").arg(m_curAntecedent->symbol(), (m_curAntecedent->isValid(m_type) ? "valid" : "INVALID")));
                     }
                     m_curAntecedent = std::make_shared<Antecedent>(symbol);
                     m_antecedents[symbol] = m_curAntecedent;
@@ -135,7 +135,7 @@ bool Schema::load(const QString &filePath)
     }
 
     if (m_curAntecedent) {
-        emit logEvent(QString("%1 is %2").arg(m_curAntecedent->symbol(), (m_curAntecedent->isValid(m_type) ? "valid" : "invalid")));
+        emit logEvent(QString("%1 is %2").arg(m_curAntecedent->symbol(), (m_curAntecedent->isValid(m_type) ? "valid" : "INVALID")));
     }
 
     m_curAntecedent = nullptr;
@@ -740,11 +740,25 @@ void Antecedent::addMorph(const QString &phrase, QHash<QString,bool>& labels)
 
 bool Antecedent::isValid(const Schema::Type schemaType) const
 {
-    if (schemaType == Schema::Flat) {
-        return m_morphs.size() == 6 || m_morphs.size() == 5;
+    if (m_morphs.size() != 6)
+        return false;
+
+    for (auto i = m_morphs.cbegin(); i != m_morphs.cend(); i++) {
+        if (!(*i)->isValid())
+            return false;
     }
 
-    return m_morphs.size() == 6 && m_layers.size() == 6;
+    if (schemaType == Schema::Deep) {
+        if (m_layers.size() != 6)
+            return false;
+
+        for (auto i = m_layers.cbegin(); i != m_layers.cend(); i++) {
+            if (!i.value()->isValid())
+                return false;
+        }
+    }
+
+    return true;
 }
 
 bool Antecedent::isEmpty(Schema::Direction dir, Layer::Type layerType) const
@@ -1011,6 +1025,16 @@ bool Layer::isEmpty() const
     return true;
 }
 
+bool Layer::isValid() const
+{
+    for (auto i = m_morphs.cbegin(); i != m_morphs.cend(); ++i) {
+        if (!(*i)->isValid())
+            return false;
+    }
+
+    return true;
+}
+
 QStringList Layer::morphNodeLabels() const
 {
     QStringList list{};
@@ -1051,6 +1075,16 @@ void Morph::incrementPostfix()
 bool Morph::isEmpty() const
 {
     return m_phrase.isEmpty() || m_phrase == "-" || m_phrase == "N/A" || m_phrase == " ";
+}
+
+bool Morph::isValid() const
+{
+    for (auto i = m_phrase.cbegin(); i != m_phrase.cend(); i++) {
+        if (zmkKeycode(*i).isNull())
+            return false;
+    }
+
+    return true;
 }
 
 bool Morph::isSingleLettered(const QString &symbol) const

@@ -114,6 +114,7 @@ public:
 
     bool isEmpty(Schema::Direction dir) const;
     bool isEmpty() const;
+    bool isValid() const;
     QStringList morphNodeLabels() const;
     QString binding(QString const& prefix, QString const& symbol, Schema::Direction dir) const;
     QStringList macros(QString const& symbol, QString const& prefix) const;
@@ -159,6 +160,7 @@ public:
     void incrementPostfix();
 
     bool isEmpty() const;
+    bool isValid() const;
     bool isSingleLettered(QString const& symbol) const;
     QString nodeLabel() const;
     QString binding(QString const& symbol, QString const& prefix) const;
