@@ -11,7 +11,7 @@ Dialog::Dialog(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("ZMK Antecedent Morph Config Generator");
 
-    ui->schemaValidity->clear();
+    ui->finalResult->clear();
 
     connect(&m_schema, &Schema::logEvent, this, [this](QString const& message){
         ui->log->appendPlainText(message);
@@ -30,18 +30,41 @@ Dialog::Dialog(QWidget *parent)
     });
 
     connect(ui->processButton, &QPushButton::clicked, this, [this]{
-        if (!m_schema.load(ui->csvPath->text())) {
-            ui->schemaValidity->setText("CSV parsing failed");
+        ui->finalResult->clear();
+        ui->log->clear();
+
+        if (ui->csvPath->text().trimmed().isEmpty()) {
+            ui->log->appendPlainText("No input file is set, so stopping here");
+            ui->finalResult->setText("No input file set");
             return;
         }
-        ui->schemaValidity->setText(QString("Schema %1 is %2. Version %3").arg(m_schema.name(), m_schema.isValid() ? "valid" : "invalid", m_schema.version()));
+        if (!m_schema.load(ui->csvPath->text())) {
+            ui->log->appendPlainText("Loading has failed");
+            ui->finalResult->setText("Loading failed");
+            return;
+        }
+
+        ui->log->appendPlainText("Loading was successful");
+
+        ui->log->appendPlainText(QString{"Got schema name %1, version %2, %3"}.arg(m_schema.name(), m_schema.version(), m_schema.isValid() ? "valid" : "INVALID"));
+
+        if (!m_schema.isValid()) {
+            ui->finalResult->setText("The schema is INVALID");
+            return;
+        }
+
+        if (ui->outputPath->text().trimmed().isEmpty()) {
+            ui->log->appendPlainText("No output file is set, so stopping here");
+            ui->finalResult->setText("No output file set");
+            return;
+        }
 
         if (!m_schema.save(ui->outputPath->text())) {
-            ui->schemaValidity->setText("Output generation failed");
+            ui->finalResult->setText("Output generation failed");
             return;
         }
 
-        ui->schemaValidity->setText("Done!");
+        ui->finalResult->setText("Done!");
     });
 }
 

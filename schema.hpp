@@ -59,7 +59,7 @@ public:
     static QString behavior(QString const& nodeLabel, QString const& nodeName, QString const& label, QString const& bindings, QString const& antecedents);
 
 signals:
-    void logEvent(QString const& message);
+    void logEvent(QString const& message) const;
 
 private:
     bool readCSVRow(QTextStream &in, QStringList *row);
