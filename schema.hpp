@@ -148,6 +148,7 @@ private:
     QString m_symbol;
     QHash<Layer::Type,LayerPtr> m_layers;
     std::vector<MorphPtr> m_morphs;
+    static std::vector<Layer::Type> s_orderedLayers;
 };
 
 class Morph

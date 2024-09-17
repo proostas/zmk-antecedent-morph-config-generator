@@ -692,6 +692,8 @@ void Schema::generateMacros(QTextStream& out) const
     out << QString{}.fill(' ', 4) << "};\n";
 }
 
+std::vector<Layer::Type> Antecedent::s_orderedLayers = {Layer::Mouse, Layer::Navigation, Layer::Media, Layer::Function, Layer::Number, Layer::Symbol};
+
 Antecedent::Antecedent(QString symbol)
     : m_symbol{symbol}
 {
@@ -760,8 +762,11 @@ QStringList Antecedent::morphNodeLabels() const
         if (!(*i)->isEmpty())
             list << (*i)->nodeLabel();
     }
-    for (auto i = m_layers.cbegin(); i != m_layers.cend(); i++) {
-        list << i.value()->morphNodeLabels();
+    for (auto i = s_orderedLayers.cbegin(); i != s_orderedLayers.cend(); i++) {
+        if (!m_layers.contains(*i))
+            continue;
+
+        list << m_layers[*i]->morphNodeLabels();
     }
     return list;
 }
@@ -782,8 +787,11 @@ QStringList Antecedent::macros(const QString &prefix) const
         if (!(*i)->isEmpty() && !(*i)->isSingleLettered(m_symbol))
             list << (*i)->macro(m_symbol, prefix);
     }
-    for (auto i = m_layers.cbegin(); i != m_layers.cend(); i++) {
-        list << i.value()->macros(m_symbol, prefix);
+    for (auto i = s_orderedLayers.cbegin(); i != s_orderedLayers.cend(); i++) {
+        if (!m_layers.contains(*i))
+            continue;
+
+        list << m_layers[*i]->macros(m_symbol, prefix);
     }
     return list;
 }
