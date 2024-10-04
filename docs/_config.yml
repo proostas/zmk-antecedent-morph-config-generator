@@ -1,0 +1,7 @@
+theme: jekyll-theme-minimal
+title: ZMK Antecedent Morph Config Generator
+description: The quick description and documentation of ZMK Antecedent Morph Config Generator
+
+theme: jekyll-theme-minimal
+
+markdown: kramdown
